@@ -9,7 +9,7 @@
 [How to create a restricted SSH user for port forwarding](https://askubuntu.com/questions/48129/how-to-create-a-restricted-ssh-user-for-port-forwarding)
 
 
-## Sample Use Case
+## Use Case
 
 Computer A -> a server behind a firewall that you can not
 SSH to directly, but can initiate outbond SSH connections
@@ -18,29 +18,29 @@ Computer B -> a cloud virtual machine with a real IP accessible from the
 internet that can accept inbound SSH connections
 
 Computer C -> a personal computer with access to the internet from where
-you can log in to computer B as an admin
+you can `ssh` into computer B
 
 Objective: get an SSH session from computer C to computer A for remote work
 
 You must have root priviledge in both computers A and B.
 
-### Set up computer B
+## Set up computer B
 
-#### Create a dedicated user for the tunnel
+### Create a dedicated user for the tunnel
 
 `sudo useradd -m -s /sbin/nologin autotunnel`
 
-### Set up computer A
+## Set up computer A
 
-#### Install `autossh`
+### Install `autossh`
 
 `sudo apt install autossh`
 
-#### Create a dedicated user for the tunnel to originate the connection
+### Create a dedicated user for the tunnel to originate the connection
 
 `sudo useradd -m -s /sbin/nologin autotunnel`
 
-#### Create an SSH key pair for this user
+### Create an SSH key pair for this user
 
 Impersonate this new user:
 
@@ -54,7 +54,7 @@ Set an empty passphrase and confirm the other defaults.
 
 Type `exit` to go back to the original logged in user.
 
-#### Copy the public key to computer B
+### Copy the public key to computer B
 
 Copy the file `/home/autotunnel/.ssh/id_autotunnel.pub` from computer A to
 computer C (from where you can log in as an admin user to computer B). Use
@@ -82,15 +82,15 @@ Add the uploaded public key to the `authorized_keys` file:
 
 `echo 'no-agent-forwarding,no-user-rc,no-X11-forwarding,no-pty' $(cat id_autotunnel.pub) | sudo su -s /bin/bash autotunnel -c "tee >> ~/.ssh/authorized_keys"`
 
-#### Add computer B to the known_hosts file
+### Add computer B to the known_hosts file
 
 From the console in computer A:
 
 `ssh-keyscan -H -t ed25519 compute.B.ip.address | sudo su -s /bin/sh autotunnel -c "tee >> ~/.ssh/known_hosts"`
 
-### Test the tunnel
+## Test the tunnel
 
-#### From computer A
+### From computer A
 
 Verify if ssh is running:
 
@@ -128,9 +128,9 @@ You can actually test the tunnel from computer B with the following command:
 
 `ssh -o PubkeyAuthentication=no -p 9000 username_on_comp_A@127.0.0.1`
 
-### Make the tunnel persistent
+## Make the tunnel persistent
 
-#### From computer A
+### From computer A
 
 ```
 cat > /etc/systemd/system/autossh-myserver.service << EOF
@@ -160,10 +160,21 @@ Start the service:
 
 `systemctl start autossh-myserver.service`
 
-### Use the tunnel
+## Use the tunnel
 
 From computer C, `ssh` into computer B and use the command
 bellow to get access to computer A:
 
 `ssh -o PubkeyAuthentication=no -p 9000 username_on_comp_A@127.0.0.1`
+
+## Notes
+
+I have tested the above use case/configurations with the following OS:
+
+Computer A: Kali Linux
+
+Computer B: Ubuntu VM on a cloud provider
+
+Computer C: MacOS
+
 
