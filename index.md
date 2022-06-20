@@ -132,9 +132,10 @@ You can actually test the tunnel from computer B with the following command:
 
 ### From computer A
 
-```
-cat > /etc/systemd/system/autossh-myserver.service << EOF
+Create a file `/etc/systemd/system/autossh-myserver.service` with the
+content bellow. Remember to set your computer B IP address.
 
+```
 [Unit] 
 Description=Keep a tunnel to 'myserver' open 
 After=network-online.target
@@ -143,13 +144,12 @@ After=network-online.target
 [Service]
 Type=forking
 User=autotunnel
-ExecStart=/usr/bin/autossh -f -M 0 -o ServerAliveInterval=30 -o ServerAliveCountMax=3  -N autotunel@computer.B.ip.address -R 9000:127.0.0.1:22
+ExecStart=/usr/bin/autossh -f -M 0 -o ServerAliveInterval=30 -o ServerAliveCountMax=3  -N autotunnel@computer.B.ip.address -R 9000:127.0.0.1:22
 ExecStop=/usr/bin/pkill -9 -u autotunnel
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
-EOF
 ```
 
 Enable the service:
